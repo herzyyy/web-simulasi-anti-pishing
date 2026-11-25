@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Simulator edukasi anti-phishing interaktif untuk pelajar SMP dan SMA.">
+  <title>CekLink: Simulator Anti-Phishing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            navy: '#0F172A',
+            cyan: '#06B6D4',
+            safe: '#10B981',
+            danger: '#EF4444'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: light; --navy:#0f172a; --cyan:#06b6d4; --safe:#10b981; --danger:#ef4444; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background:#f6f9fc; color:var(--navy); }
+    button, input { font:inherit; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+    .app-bg {
+      background-image: radial-gradient(ellipse at 9% 0%,rgba(6,182,212,.11),transparent 33%),
+        radial-gradient(ellipse at 94% 19%,rgba(16,185,129,.08),transparent 28%);
+    }
+    .screen { animation: screen-in .38s ease both; }
+    @keyframes screen-in { from { opacity:0; transform:translateY(9px); } to { opacity:1; transform:translateY(0); } }
+    .soft-shadow { box-shadow:0 20px 60px rgba(15,23,42,.08); }
+    .device-frame { border:8px solid #111827; border-radius:30px; background:#fff; overflow:hidden; box-shadow:0 22px 50px rgba(15,23,42,.17); }
+    .device-notch { width:92px; height:18px; border-radius:0 0 14px 14px; background:#111827; margin:0 auto 3px; }
+    .flag-highlight { position:relative; z-index:1; outline:3px solid var(--danger)!important; outline-offset:3px; border-radius:5px; animation:flag-pulse 1.15s ease-in-out infinite; }
+    @keyframes flag-pulse { 50% { outline-color:rgba(239,68,68,.25); box-shadow:0 0 0 6px rgba(239,68,68,.12); } }
+    .progress-fill { transition:width .5s ease; }
+    .modal-backdrop { background:rgba(15,23,42,.72); backdrop-filter:blur(5px); }
+    .case-content { min-height:310px; }
+    .choice-btn { transition:transform .18s ease, box-shadow .18s ease; }
+    .choice-btn:hover { transform:translateY(-2px); }
+    .xray-row + .xray-row { border-top:1px solid #e2e8f0; }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; transition-duration:.01ms!important; }
+    }
+  </style>
+</head>
+<body class="app-bg min-h-screen">
+  <div id="app">
+    <header class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-7 lg:px-10">
+      <a href="#" class="flex items-center gap-3" aria-label="CekLink beranda" id="brand-home">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-navy text-cyan shadow-lg shadow-slate-900/15">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 19 6v5c0 4.7-3 8-7 10-4-2-7-5.3-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span><span class="block text-lg font-extrabold tracking-tight">Cek<span class="text-cyan-600">Link</span></span><span class="block text-[10px] font-bold uppercase tracking-[.2em] text-slate-500">Simulator Anti-Phishing</span></span>
+      </a>
+      <div class="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-600 sm:flex">
+        <span class="h-2 w-2 rounded-full bg-safe"></span> Belajar aman, tanpa risiko
+      </div>
+      <span class="rounded-full bg-cyan-50 px-3 py-1.5 text-xs font-bold text-cyan-800 sm:hidden">Mode edukasi</span>
+    </header>
+
+    <main id="main-content" class="mx-auto max-w-7xl px-4 pb-12 pt-3 sm:px-7 lg:px-10">
+      <section id="landing-screen" class="screen">
+        <div class="grid items-center gap-10 py-8 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:py-14">
+          <div>
+            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-100 bg-white/80 px-3 py-1.5 text-xs font-bold text-cyan-800">
+              <span class="grid h-5 w-5 place-items-center rounded-full bg-cyan-100">✦</span> Misi digital untuk pelajar SMP / SMA
+            </div>
+            <h1 class="max-w-2xl text-4xl font-extrabold leading-[1.12] tracking-tight text-navy sm:text-5xl lg:text-[3.55rem]">
+              Jeli sebelum klik.<br><span class="text-cyan-600">Aman di dunia digital.</span>
+            </h1>
+            <p class="mt-5 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">Latih instingmu membedakan pesan asli dan jebakan phishing lewat 8 simulasi yang dekat dengan keseharian pelajar.</p>
+            <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600">
+              <span class="inline-flex items-center gap-2"><svg class="text-safe" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tanpa akun & data sensitif</span>
+              <span class="inline-flex items-center gap-2"><svg class="text-safe" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Gratis dan aman dimainkan</span>
+            </div>
+
+            <form id="player-form" class="mt-9 max-w-xl rounded-3xl border border-slate-200/80 bg-white p-5 soft-shadow sm:p-6">
+              <div class="mb-5 flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </span>
+                <div><h2 class="font-extrabold">Siap ikut misi?</h2><p class="text-xs text-slate-500">Cukup isi nama dan sekolahmu.</p></div>
+              </div>
+              <label for="player-name" class="mb-1.5 block text-xs font-bold text-slate-700">Nama lengkap / panggilan</label>
+              <input id="player-name" name="name" maxlength="40" autocomplete="name" required placeholder="Contoh: Aulia" class="mb-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100">
+              <label for="player-school" class="mb-1.5 block text-xs font-bold text-slate-700">Asal sekolah / kelas</label>
+              <input id="player-school" name="school" maxlength="60" autocomplete="organization" required placeholder="Contoh: SMP Harapan, kelas 8B" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100">
+              <button type="submit" class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-5 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-slate-900/15 transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-cyan-200">
+                Mulai Simulasi <span aria-hidden="true">→</span>
+              </button>
+              <p class="mt-3 text-center text-[11px] leading-5 text-slate-500">Informasi hanya disimpan di perangkat ini untuk simulasi dan sertifikat.</p>
+            </form>
+          </div>
+
+          <div class="relative mx-auto w-full max-w-lg">
+            <div class="absolute -left-5 top-16 hidden h-24 w-24 rounded-full bg-cyan-200/50 blur-2xl sm:block"></div>
+            <div class="absolute -right-4 bottom-12 hidden h-28 w-28 rounded-full bg-emerald-200/60 blur-2xl sm:block"></div>
+            <div class="relative rounded-[2rem] border border-slate-200 bg-white p-5 soft-shadow sm:p-7">
+              <div class="mb-5 flex items-center justify-between">
+                <div><p class="text-xs font-bold uppercase tracking-[.16em] text-slate-400">Misi hari ini</p><p class="mt-1 text-xl font-extrabold">Jadi detektif link 🕵️</p></div>
+                <span class="rounded-xl bg-amber-50 px-3 py-2 text-xs font-extrabold text-amber-700">8 kasus</span>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-100 text-lg">🔎</span>
+                  <div><p class="text-sm font-extrabold">Periksa petunjuknya</p><p class="mt-0.5 text-xs leading-5 text-slate-500">Cek alamat, pengirim, dan isi pesan.</p></div>
+                  <span class="ml-auto text-cyan-600">01</span>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-lg">🧠</span>
+                  <div><p class="text-sm font-extrabold">Tentukan pilihanmu</p><p class="mt-0.5 text-xs leading-5 text-slate-500">Aman atau phishing? Percayai bukti.</p></div>
+                  <span class="ml-auto text-cyan-600">02</span>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-100 text-lg">🏆</span>
+                  <div><p class="text-sm font-extrabold">Kumpulkan poin & tips</p><p class="mt-0.5 text-xs leading-5 text-slate-500">Pelajari cara melindungi akunmu.</p></div>
+                  <span class="ml-auto text-cyan-600">03</span>
+                </div>
+              </div>
+              <div class="mt-5 flex items-center gap-3 rounded-2xl bg-navy p-4 text-white">
+                <span class="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-cyan-300">!</span>
+                <p class="text-xs leading-5 text-slate-200">Semua pesan dan tautan di sini <strong class="text-white">hanya simulasi</strong>. Jangan pernah masukkan password atau OTP sungguhan.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="game-screen" class="screen hidden" aria-live="polite">
+        <div class="mx-auto max-w-5xl">
+          <div class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex sm:items-center sm:justify-between sm:px-6">
+            <div class="mb-3 flex items-center gap-3 sm:mb-0">
+              <span class="grid h-10 w-10 place-items-center rounded-full bg-cyan-50 text-lg">🎓</span>
+              <div><p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pemain</p><p id="header-player" class="text-sm font-extrabold"></p></div>
+            </div>
+            <div class="flex-1 sm:mx-8">
+              <div class="mb-2 flex justify-between text-xs font-bold"><span id="case-count" class="text-slate-700">Kasus 1 / 8</span><span id="score-label" class="text-cyan-700">0 / 800 poin</span></div>
+              <div class="h-2 overflow-hidden rounded-full bg-slate-100"><div id="progress-bar" class="progress-fill h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400" style="width:0%"></div></div>
+            </div>
+            <button type="button" id="exit-game" class="mt-3 text-xs font-bold text-slate-500 underline decoration-slate-300 underline-offset-4 hover:text-slate-800 sm:mt-0">Keluar</button>
+          </div>
+
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div><p id="case-category" class="text-xs font-extrabold uppercase tracking-[.18em] text-cyan-700">SIMULASI DIGITAL</p><h1 id="case-title" class="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl"></h1></div>
+            <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-extrabold text-amber-800">🧪 Hanya simulasi</span>
+          </div>
+
+          <div class="grid items-start gap-5 lg:grid-cols-[1fr_290px]">
+            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white soft-shadow">
+              <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
+                <div class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-red-400"></span><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span><span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span></div>
+                <span id="mockup-label" class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Pratinjau pesan</span>
+                <span class="text-xs text-slate-400">•••</span>
+              </div>
+              <div id="mockup" class="case-content p-4 sm:p-7"></div>
+            </div>
+            <aside class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-cyan-50 text-cyan-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4M11 8v3l2 1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+                <div><h2 class="text-sm font-extrabold">Butuh petunjuk?</h2><p class="text-[11px] text-slate-500">Bedah URL / pengirimnya</p></div>
+              </div>
+              <button id="xray-button" type="button" class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-3 text-xs font-extrabold text-cyan-800 transition hover:bg-cyan-100 focus:outline-none focus:ring-4 focus:ring-cyan-100">
+                <span aria-hidden="true">🔍</span> Periksa Detail Pengirim / Tautan
+              </button>
+              <div id="xray-panel" class="mt-4 hidden" aria-live="polite"></div>
+              <div class="mt-5 rounded-2xl bg-slate-50 p-3.5">
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Ingat ya</p>
+                <p class="mt-1 text-xs leading-5 text-slate-600">Jangan klik tautan mencurigakan. Amati petunjuknya di simulasi ini.</p>
+              </div>
+            </aside>
+          </div>
+
+          <div class="mt-5">
+            <p class="mb-3 text-center text-xs font-bold text-slate-500">Menurutmu, pesan ini...</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <button type="button" data-answer="safe" class="choice-btn flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-emerald-200 bg-white px-5 py-4 text-sm font-extrabold text-emerald-800 shadow-sm hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"><span class="text-lg">✅</span> AMAN (Legit)</button>
+              <button type="button" data-answer="phishing" class="choice-btn flex min-h-14 items-center justify-center gap-2 rounded-2xl border-2 border-red-200 bg-white px-5 py-4 text-sm font-extrabold text-red-700 shadow-sm hover:border-red-400 hover:shadow-lg hover:shadow-red-100 focus:outline-none focus:ring-4 focus:ring-red-100"><span class="text-lg">🚨</span> PHISHING (Penipuan)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="result-screen" class="screen hidden" aria-live="polite">
+        <div class="mx-auto max-w-4xl">
+          <div class="overflow-hidden rounded-[2rem] bg-navy text-white soft-shadow">
+            <div class="relative px-5 py-9 text-center sm:px-10 sm:py-12">
+              <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(circle at 50% 0%,#06b6d4,transparent 58%)"></div>
+              <div class="relative">
+                <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-white/10 bg-white/10 text-2xl">🏆</span>
+                <p class="mt-4 text-xs font-extrabold uppercase tracking-[.2em] text-cyan-300">Misi selesai!</p>
+                <h1 class="mt-2 text-3xl font-extrabold sm:text-4xl">Kerja bagus, <span id="result-name"></span>!</h1>
+                <p class="mt-2 text-sm text-slate-300">Setiap keputusan cerdas bikin ruang digital lebih aman.</p>
+                <div class="mx-auto mt-7 grid max-w-lg grid-cols-2 gap-3">
+                  <div class="rounded-2xl border border-white/10 bg-white/5 p-4"><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Skor akhir</p><p class="mt-1 text-3xl font-extrabold text-white"><span id="final-score">0</span><span class="text-base text-slate-400"> / 800</span></p></div>
+                  <div class="rounded-2xl border border-white/10 bg-white/5 p-4"><p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Akurasi</p><p id="final-accuracy" class="mt-1 text-3xl font-extrabold text-cyan-300">0%</p></div>
+                </div>
+                <div class="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm font-extrabold text-cyan-200"><span>✦</span><span id="final-title">Cyber Rookie (Perlu Waspada)</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_290px]">
+            <div class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
+              <div class="mb-4 flex items-center justify-between"><div><h2 class="font-extrabold">Rekap kasus</h2><p class="mt-1 text-xs text-slate-500">Lihat lagi keputusanmu di tiap kasus.</p></div><span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">8 kasus</span></div>
+              <div id="recap-list" class="space-y-2"></div>
+            </div>
+            <aside class="rounded-3xl border border-cyan-100 bg-cyan-50/70 p-5">
+              <span class="grid h-11 w-11 place-items-center rounded-xl bg-white text-xl shadow-sm">🎖️</span>
+              <h2 class="mt-3 font-extrabold">Bawa pulang sertifikat</h2>
+              <p class="mt-1 text-xs leading-5 text-slate-600">Simpan pencapaianmu sebagai gambar PNG dan bagikan ke teman.</p>
+              <button id="download-certificate" type="button" class="mt-4 w-full rounded-xl bg-navy px-4 py-3 text-xs font-extrabold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-cyan-200">Unduh Sertifikat Digital (PNG)</button>
+              <p id="certificate-status" class="mt-2 min-h-4 text-center text-[10px] text-slate-500" aria-live="polite"></p>
+            </aside>
+          </div>
+          <button type="button" id="restart-game" class="mx-auto mt-6 flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-extrabold text-slate-700 transition hover:border-cyan-400 hover:text-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-100"><span>↻</span> Ulangi Simulasi</button>
+        </div>
+      </section>
+    </main>
+    <footer class="mx-auto max-w-7xl px-4 pb-6 text-center text-[10px] leading-5 text-slate-400 sm:px-7 lg:px-10">CekLink adalah media edukasi. Semua identitas, pesan, dan alamat dalam simulasi ini ditampilkan untuk latihan keamanan siber.</footer>
+
+    <div id="feedback-modal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto p-4" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="my-auto w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl sm:p-7">
+        <div id="feedback-icon" class="grid h-12 w-12 place-items-center rounded-2xl text-xl"></div>
+        <p id="feedback-kicker" class="mt-4 text-[10px] font-extrabold uppercase tracking-[.18em]"></p>
+        <h2 id="feedback-title" class="mt-1 text-2xl font-extrabold"></h2>
+        <p id="feedback-summary" class="mt-2 text-sm leading-6 text-slate-600"></p>
+        <div class="mt-4 rounded-2xl bg-slate-50 p-4">
+          <h3 id="feedback-reason-heading" class="text-xs font-extrabold text-slate-800"></h3>
+          <ul id="feedback-reasons" class="mt-2 list-disc space-y-1.5 pl-4 text-xs leading-5 text-slate-600"></ul>
+        </div>
+        <div class="mt-3 rounded-2xl border border-cyan-100 bg-cyan-50/70 p-4">
+          <h3 class="text-xs font-extrabold text-cyan-900">🛡️ Tips pencegahan</h3>
+          <p id="feedback-tip" class="mt-1.5 text-xs leading-5 text-cyan-900/80"></p>
+        </div>
+        <button id="next-case" type="button" class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-5 py-3.5 text-sm font-extrabold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-cyan-200">Lanjut ke Kasus Berikutnya <span>→</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Bank skenario dipisahkan dari logika tampilan agar mudah dibaca dan dikembangkan.
+    const scenarios = [
+      {
+        id:1, title:'Skin & diamond gratis?', channel:'browser', label:'HALAMAN KLAIM HADIAH',
+        isPhishing:true, sender:'Event Hadiah Gamer', address:'https://claim-diamond-event2026.xyz/claim',
+        xray:[['Protokol','https://','Koneksi terenkripsi, tapi belum tentu situsnya tepercaya.'],['Subdomain','(tidak ada)','Alamat langsung menuju domain utama.'],['Domain utama','claim-diamond-event2026.xyz','Domain promosi tidak resmi; nama event dan tahun dipakai agar tampak meyakinkan.'],['Ekstensi / path','.xyz/claim','Bukan kanal resmi game. HTTPS tidak menjamin situs aman.']],
+        headline:'KLAIM 5.000 DIAMOND GRATIS!', body:'Kesempatan terbatas! Hadiah akan hangus dalam:', detail:'00:04:59', fields:['Email akun game','Password akun game'], button:'KLAIM SEKARANG',
+        flag:'domain-flag', flagText:'claim-diamond-event2026.xyz',
+        reasons:['Domain hadiah tidak menunjukkan kanal resmi penerbit game.','Timer hitung mundur menciptakan rasa panik agar kamu cepat bertindak.','Form meminta password akun. Situs hadiah tidak seharusnya meminta kredensial akunmu.'],
+        tip:'Jangan masukkan password lewat tautan hadiah. Buka aplikasi atau situs resmi game secara langsung untuk mengecek promo.'
+      },
+      {
+        id:2, title:'File “cek resi” dari nomor asing', channel:'whatsapp', label:'CHAT WHATSAPP',
+        isPhishing:true, sender:'+62 812-••••-4381', address:'Cek_Resi_Paket_Anda.apk',
+        xray:[['Pengirim','+62 812-••••-4381','Nomor tak dikenal, bukan kanal resmi kurir yang terverifikasi.'],['Nama file','Cek_Resi_Paket_Anda.apk','Ekstensi .apk adalah aplikasi Android, bukan dokumen resi.'],['Jenis tautan','Lampiran aplikasi','Memasang APK dari chat dapat memberi aplikasi akses berbahaya.']],
+        headline:'Paket Anda tertahan!', body:'Saya kurir, paket tidak bisa dikirim karena alamat tidak lengkap. Segera cek resi ya, kalau tidak paket dikembalikan hari ini.', detail:'📎  Cek_Resi_Paket_Anda.apk  ·  1,8 MB', button:'Unduh lampiran',
+        flag:'apk-flag', flagText:'Cek_Resi_Paket_Anda.apk',
+        reasons:['Kurir tidak perlu mengirim file APK agar kamu bisa melacak paket.','Lampiran .apk adalah aplikasi yang bisa dijalankan di ponsel, bukan bukti pengiriman.','Desakan “hari ini” mendorongmu memasang file tanpa sempat memeriksa.'],
+        tip:'Jangan unduh atau pasang APK dari chat. Lacak paket lewat aplikasi atau situs resmi ekspedisi dengan nomor resi.'
+      },
+      {
+        id:3, title:'Peringatan login baru dari Google', channel:'email', label:'KOTAK MASUK EMAIL',
+        isPhishing:false, sender:'Google <no-reply@accounts.google.com>', address:'https://myaccount.google.com/notifications',
+        xray:[['Pengirim','no-reply@accounts.google.com','Domain pengirim tepat accounts.google.com; tetap periksa konteks pesannya.'],['Protokol','https://','Koneksi HTTPS aktif.'],['Domain utama','myaccount.google.com','Subdomain dari google.com dengan domain utama yang sesuai.'],['Permintaan','Tidak ada password / OTP','Pesan hanya memberi notifikasi dan mengarahkan ke halaman akun.']],
+        subject:'Pemberitahuan keamanan: login baru', headline:'Login baru di perangkat Anda', body:'Kami mendeteksi login ke Akun Google Anda dari perangkat baru. Jika ini Anda, tidak perlu melakukan apa pun. Anda dapat meninjau aktivitas keamanan akun.', detail:'Tinjau aktivitas akun →', button:'Lihat aktivitas',
+        flag:null,
+        reasons:['Alamat pengirim menggunakan domain accounts.google.com yang sesuai.','Tautan menuju myaccount.google.com, masih di domain utama google.com.','Email notifikasi tidak meminta password atau kode OTP melalui balasan.'],
+        tip:'Tetap cek alamat tujuan sebelum membuka tautan. Jika ragu, kunjungi halaman akun dengan mengetik alamatnya sendiri.'
+      },
+      {
+        id:4, title:'DM ancaman akun Instagram dihapus', channel:'instagram', label:'SIMULASI DM INSTAGRAM',
+        isPhishing:true, sender:'@ig.support_helpcenter26', address:'https://bit.ly/ig-verify-appeal',
+        xray:[['Pengirim','@ig.support_helpcenter26','Nama akun yang mengaku dukungan resmi, tetapi bukan bukti identitas resmi.'],['Domain tujuan','bit.ly','Pemendek tautan menyembunyikan alamat tujuan sebenarnya.'],['Path','/ig-verify-appeal','Kata “appeal” dibuat agar terlihat seperti proses banding.']],
+        headline:'Pelanggaran Pedoman Komunitas', body:'Akun Anda dilaporkan dan akan dihapus dalam 12 jam. Ajukan banding sekarang untuk menghindari penonaktifan permanen.', detail:'Formulir banding  →', button:'Ajukan banding',
+        flag:'ig-handle-flag', flagText:'@ig.support_helpcenter26',
+        reasons:['Akun dukungan menggunakan handle tidak resmi yang meniru nama Instagram.','Tautan pendek bit.ly menyamarkan alamat situs yang akan dibuka.','Ancaman penghapusan dalam 12 jam adalah tekanan agar kamu bertindak cepat.'],
+        tip:'Jangan isi formulir dari DM. Periksa notifikasi pelanggaran langsung dari aplikasi atau pusat bantuan resmi.'
+      },
+      {
+        id:5, title:'Broadcast bantuan kuota 50GB', channel:'whatsapp-group', label:'GRUP WHATSAPP',
+        isPhishing:true, sender:'Grup Kelas 8B · diteruskan berkali-kali', address:'http://kuota-pendidikan-gratis.blogspot.com',
+        xray:[['Protokol','http://','Tidak menggunakan HTTPS; koneksi tidak terenkripsi.'],['Domain utama','blogspot.com','Blog gratis umum, bukan domain program pemerintah atau operator.'],['Subdomain','kuota-pendidikan-gratis','Nama dibuat menyerupai program resmi.'],['Permintaan','Bagikan ke 5 grup','Mekanisme sebar-berantai untuk memperluas jangkauan pesan.']],
+        headline:'🎁 BANTUAN KUOTA PELAJAR', body:'Klaim kuota internet gratis 50GB untuk pelajar sekarang! Isi data sebelum pendaftaran ditutup.', detail:'http://kuota-pendidikan-gratis.blogspot.com', button:'KLAIM KUOTA',
+        flag:'quota-url-flag', flagText:'kuota-pendidikan-gratis.blogspot.com',
+        reasons:['Alamat berada di Blogspot, bukan domain resmi sekolah, pemerintah, atau operator.','Tautan memakai HTTP, bukan HTTPS.','Syarat membagikan pesan ke 5 grup adalah pola spam dan penyebaran berantai.'],
+        tip:'Periksa pengumuman bantuan lewat situs resmi sekolah, pemerintah, atau operator. Jangan sebarkan pesan sebelum terverifikasi.'
+      },
+      {
+        id:6, title:'Pengumuman portal belajar sekolah', channel:'browser', label:'PORTAL PENGUMUMAN SEKOLAH',
+        isPhishing:false, sender:'Portal Pendidikan Sekolah', address:'https://pengumuman.smpn8-kotakita.sch.id/hasil',
+        xray:[['Protokol','https://','Koneksi HTTPS aktif dengan ikon gembok.'],['Subdomain','pengumuman','Bagian alamat untuk layanan pengumuman.'],['Domain utama','smpn8-kotakita.sch.id','Akhiran .sch.id digunakan untuk domain sekolah. Pastikan sesuai sekolahmu.'],['Permintaan','NISN saja','Tidak meminta password email pribadi atau kode OTP.']],
+        headline:'Pengumuman Hasil Seleksi', body:'Masukkan NISN untuk melihat hasil seleksi kegiatan sekolah. Pastikan NISN yang dimasukkan milikmu.', detail:'NISN:  (contoh) 0091234567', button:'LIHAT PENGUMUMAN',
+        flag:null,
+        reasons:['Alamat memakai HTTPS dan domain berakhiran .sch.id yang lazim dipakai sekolah.','Pengumuman hanya meminta NISN untuk pencarian hasil, bukan password email atau OTP.','Pastikan nama domain sesuai dengan sekolahmu sebelum memasukkan data apa pun.'],
+        tip:'Cek alamat dengan teliti dan konfirmasi ke guru atau sekolah jika belum yakin portalnya resmi.'
+      },
+      {
+        id:7, title:'Email reset password yang tampak rapi', channel:'email', label:'KOTAK MASUK EMAIL',
+        isPhishing:true, sender:'Instagram Security <security@instagran-mail.com>', address:'http://192.168.45.12/login',
+        xray:[['Pengirim','security@instagran-mail.com','“instagran” salah eja (m diganti n) dan bukan domain resmi Instagram.'],['Protokol','http://','Tidak ada enkripsi HTTPS.'],['Domain tujuan','192.168.45.12','Alamat IP mentah, bukan domain layanan resmi.'],['Path','/login','Halaman login palsu berpotensi mencuri kata sandi.']],
+        subject:'Permintaan reset kata sandi Anda', headline:'Reset password akun Anda', body:'Kami menerima permintaan untuk mengatur ulang kata sandi. Jika Anda tidak melakukan ini, amankan akun Anda sekarang.', detail:'http://192.168.45.12/login', button:'Amankan akun',
+        flag:'email-sender-flag', flagText:'security@instagran-mail.com',
+        reasons:['Domain pengirim salah eja: “instagran-mail.com”, bukan domain Instagram.','Tombol mengarah ke alamat IP mentah dengan HTTP, bukan situs resmi.','Tampilan email yang rapi tidak membuktikan pengirimnya tepercaya.'],
+        tip:'Arahkan kursor atau tekan lama untuk melihat tujuan tautan. Jika diminta reset, buka aplikasi resmi secara langsung.'
+      },
+      {
+        id:8, title:'Saldo e-wallet gratis dengan kode rahasia', channel:'browser', label:'HALAMAN KLAIM SALDO',
+        isPhishing:true, sender:'Promo Saldo Pelajar', address:'https://dana-kaget-hadiah-pelajar.example/claim',
+        xray:[['Protokol','https://','HTTPS hanya mengenkripsi koneksi; tidak memastikan promo itu asli.'],['Domain utama','dana-kaget-hadiah-pelajar.example','Domain bukan kanal resmi penyedia e-wallet.'],['Permintaan','Nomor HP + PIN / OTP','PIN dan OTP adalah rahasia pribadi, tidak boleh diminta halaman klaim.'],['Tanda bahaya','Kode 6 digit SMS','Kode SMS dapat digunakan untuk mengambil alih akun.']],
+        headline:'DANA Kaget — Saldo Gratis Pelajar!', body:'Masukkan nomor HP dan kode verifikasi untuk klaim saldo kejutanmu sekarang.', detail:'Nomor HP: 08•• •••• ••••', button:'VERIFIKASI & KLAIM',
+        fields:['Nomor HP','6 digit PIN / OTP SMS'],
+        flag:'otp-flag', flagText:'6 digit PIN / OTP SMS',
+        reasons:['Promo meminta PIN atau OTP 6 digit yang dikirim melalui SMS.','Kode OTP dan PIN hanya untuk pemilik akun; membagikannya dapat memberi akses ke akunmu.','Nama kampanye dan tampilan halaman mudah ditiru oleh situs palsu.'],
+        tip:'Jangan pernah bagikan OTP, PIN, atau kode verifikasi—termasuk kepada orang yang mengaku petugas. Hubungi layanan resmi bila ragu.'
+      }
+    ];
+
+    const STORAGE_KEY = 'ceklink-simulator-state-v1';
+    const screens = ['landing-screen','game-screen','result-screen'].map(id => document.getElementById(id));
+    const state = { player:{name:'',school:''}, index:0, score:0, answers:[], modalOpen:false };
+
+    // Mengubah tampilan utama dengan transisi sederhana tanpa memuat ulang halaman.
+    function showScreen(screenId) {
+      screens.forEach(screen => screen.classList.toggle('hidden', screen.id !== screenId));
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // Menyimpan data permainan yang tidak sensitif secara lokal agar hasil dapat dipulihkan.
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          player:state.player,index:state.index,score:state.score,answers:state.answers
+        }));
+      } catch (error) {
+        console.warn('Progres tidak dapat disimpan di perangkat ini.', error);
+      }
+    }
+
+    // Menampilkan isi kasus sesuai kanal simulasi serta memperbarui progres pemain.
+    function renderCase() {
+      const item = scenarios[state.index];
+      document.getElementById('header-player').textContent = `${state.player.name} · ${state.player.school}`;
+      document.getElementById('case-count').textContent = `Kasus ${state.index + 1} / ${scenarios.length}`;
+      document.getElementById('score-label').textContent = `${state.score} / 800 poin`;
+      document.getElementById('progress-bar').style.width = `${(state.index / scenarios.length) * 100}%`;
+      document.getElementById('case-title').textContent = item.title;
+      document.getElementById('case-category').textContent = `KASUS ${String(item.id).padStart(2,'0')} · SIMULASI DIGITAL`;
+      document.getElementById('mockup-label').textContent = item.label;
+      document.getElementById('xray-panel').innerHTML = '';
+      document.getElementById('xray-panel').classList.add('hidden');
+      document.getElementById('xray-button').setAttribute('aria-expanded','false');
+      document.getElementById('mockup').innerHTML = renderMockup(item);
+      document.querySelectorAll('[data-answer]').forEach(button => button.disabled = false);
+      saveState();
+    }
+
+    // Menghasilkan mockup UI berbeda untuk browser, chat, DM, dan email.
+    function renderMockup(item) {
+      if (item.channel === 'whatsapp' || item.channel === 'whatsapp-group') {
+        const group = item.channel === 'whatsapp-group';
+        return `<div class="mx-auto max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-[#e9f2ee]">
+          <div class="flex items-center gap-3 bg-[#075e54] px-4 py-3 text-white"><span class="grid h-9 w-9 place-items-center rounded-full bg-white/20">${group?'👥':'📦'}</span><div><p class="text-sm font-extrabold">${group?'Grup Kelas 8B':item.sender}</p><p class="text-[10px] text-white/70">${group?'32 peserta':'online'}</p></div><span class="ml-auto">⋮</span></div>
+          <div class="space-y-3 p-4">
+            <div class="max-w-[94%] rounded-2xl rounded-tl-sm bg-white p-3 shadow-sm"><p class="mb-1 text-[10px] font-bold text-emerald-700">${group?item.sender:'Nomor tidak dikenal'}</p><p class="text-xs leading-5 text-slate-700">${escapeHTML(item.body)}</p>${group?`<p class="mt-2 text-xs font-bold text-cyan-700">http://kuota-pendidikan-gratis.blogspot.com</p><div id="quota-url-flag" class="mono mt-2 break-all rounded-lg bg-slate-100 p-2 text-[10px] text-slate-600">http://kuota-pendidikan-gratis.blogspot.com</div><p class="mt-2 text-[10px] font-bold text-slate-500">Teruskan pesan ini ke 5 grup untuk klaim!</p>`:`<div id="apk-flag" class="mt-3 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5"><span class="grid h-8 w-8 place-items-center rounded-lg bg-red-100">📁</span><span class="min-w-0 flex-1"><span class="block break-all text-[10px] font-extrabold text-slate-700">${escapeHTML(item.detail)}</span><span class="text-[9px] text-slate-400">File aplikasi · 1,8 MB</span></span><span class="text-xs text-slate-400">↓</span></div>`}</div>
+            <p class="text-right text-[9px] text-slate-500">10.42 ✓✓</p>
+          </div><div class="border-t border-slate-200/70 bg-white/70 px-4 py-3 text-center text-[10px] text-slate-400">Pesan dan nama grup adalah simulasi</div>
+        </div>`;
+      }
+      if (item.channel === 'instagram') {
+        return `<div class="mx-auto max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-3"><span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-fuchsia-500 via-pink-500 to-amber-400 text-xs font-extrabold text-white">IG</span><div class="min-w-0"><p id="ig-handle-flag" class="break-all text-xs font-extrabold text-slate-800">${escapeHTML(item.sender)}</p><p class="text-[10px] text-slate-400">Akun profesional · aktif sekarang</p></div><span class="ml-auto text-slate-400">ⓘ</span></div>
+          <div class="min-h-56 bg-gradient-to-b from-white to-pink-50/40 p-5"><p class="text-center text-[9px] text-slate-400">Hari ini 09.16</p><div class="mt-4 max-w-[90%] rounded-2xl rounded-tl-sm bg-slate-100 p-3.5"><p class="text-xs font-extrabold text-slate-800">${escapeHTML(item.headline)}</p><p class="mt-2 text-xs leading-5 text-slate-600">${escapeHTML(item.body)}</p><p class="mono mt-3 break-all rounded-lg bg-white p-2 text-[10px] font-semibold text-blue-700">${escapeHTML(item.address)}</p><button class="mt-3 w-full rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-2 text-[10px] font-extrabold text-white">${escapeHTML(item.button)}</button></div></div>
+          <div class="border-t border-slate-100 px-4 py-3 text-center text-[10px] text-slate-400">Pesan langsung · Simulasi edukasi</div></div>`;
+      }
+      if (item.channel === 'email') {
+        return `<div class="mx-auto max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-100 p-4"><div class="flex items-center gap-2 text-[10px] text-slate-400"><span>INBOX</span><span>›</span><span class="text-slate-600">Pesan masuk</span></div><h3 class="mt-3 text-sm font-extrabold text-slate-800">${escapeHTML(item.subject)}</h3><div class="mt-3 flex items-center gap-2"><span class="grid h-8 w-8 place-items-center rounded-full ${item.isPhishing?'bg-pink-100 text-pink-700':'bg-blue-100 text-blue-700'} text-[10px] font-extrabold">${item.isPhishing?'I':'G'}</span><div class="min-w-0 flex-1"><p id="email-sender-flag" class="break-all text-[10px] font-bold text-slate-700">${escapeHTML(item.sender)}</p><p class="text-[9px] text-slate-400">kepada saya · 09.24</p></div><span class="text-[10px] text-slate-400">⋮</span></div></div>
+          <div class="p-5"><div class="rounded-xl ${item.isPhishing?'bg-gradient-to-br from-purple-50 to-pink-50':'bg-gradient-to-br from-blue-50 to-cyan-50'} p-4"><p class="text-[9px] font-bold uppercase tracking-widest ${item.isPhishing?'text-purple-600':'text-blue-600'}">${item.isPhishing?'PUSAT KEAMANAN':'NOTIFIKASI KEAMANAN'}</p><h4 class="mt-2 text-sm font-extrabold text-slate-800">${escapeHTML(item.headline)}</h4><p class="mt-2 text-xs leading-5 text-slate-600">${escapeHTML(item.body)}</p><div class="mono mt-3 break-all rounded-lg bg-white p-2 text-[9px] text-slate-600">${escapeHTML(item.detail)}</div><button class="mt-3 rounded-lg ${item.isPhishing?'bg-purple-600':'bg-blue-600'} px-4 py-2 text-[10px] font-extrabold text-white">${escapeHTML(item.button)}</button></div><p class="mt-3 text-[9px] text-slate-400">Mockup email untuk latihan · Jangan klik tautan nyata</p></div></div>`;
+      }
+      const safe = !item.isPhishing;
+      const displayUrl = item.address.replace(/^https:\/\//,'');
+      return `<div class="mx-auto max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex items-center gap-2 bg-slate-100 px-3 py-2"><span class="flex gap-1"><i class="h-2 w-2 rounded-full bg-red-400"></i><i class="h-2 w-2 rounded-full bg-amber-400"></i><i class="h-2 w-2 rounded-full bg-emerald-400"></i></span><div class="mono flex min-w-0 flex-1 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[9px] text-slate-600"><span class="${safe?'text-safe':'text-amber-600'}">${safe?'🔒':'ⓘ'}</span><span id="${safe?'safe-url-flag':'domain-flag'}" class="break-all">${escapeHTML(displayUrl)}</span></div><span class="text-xs text-slate-500">↻</span></div>
+        <div class="p-5 sm:p-7"><div class="mx-auto max-w-sm text-center"><div class="mx-auto grid h-11 w-11 place-items-center rounded-2xl ${safe?'bg-blue-50 text-blue-700':'bg-amber-50 text-amber-700'} text-xl">${safe?'🏫':'🎮'}</div><p class="mt-3 text-[9px] font-extrabold uppercase tracking-[.18em] ${safe?'text-blue-700':'text-amber-700'}">${safe?'PORTAL PENGUMUMAN':'EVENT SPESIAL'}</p><h3 class="mt-2 text-lg font-extrabold text-slate-800">${escapeHTML(item.headline)}</h3><p class="mt-2 text-xs leading-5 text-slate-500">${escapeHTML(item.body)}</p>
+          ${safe?`<div class="mt-5 rounded-xl border border-slate-200 p-3 text-left"><label class="text-[10px] font-bold text-slate-600">NISN siswa</label><div class="mono mt-1 rounded-lg bg-slate-50 p-2 text-[10px] text-slate-400">${escapeHTML(item.detail)}</div></div>`:item.id===8?`<div class="mt-4 space-y-2 text-left"><div class="rounded-lg border border-slate-200 px-3 py-2 text-[10px] text-slate-400">${escapeHTML(item.fields[0])}</div><div id="otp-flag" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[10px] font-bold text-red-700">${escapeHTML(item.fields[1])}</div></div>`:`<div class="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-xs font-extrabold text-amber-800">⏱️ Hadiah hangus dalam ${escapeHTML(item.detail)}</div><div class="mt-4 space-y-2 text-left"><div class="rounded-lg border border-slate-200 px-3 py-2 text-[10px] text-slate-400">${escapeHTML(item.fields[0])}</div><div class="rounded-lg border border-slate-200 px-3 py-2 text-[10px] text-slate-400">${escapeHTML(item.fields[1])}</div></div>`}
+          <button class="mt-4 w-full rounded-xl ${safe?'bg-blue-700':'bg-amber-500'} px-4 py-3 text-xs font-extrabold text-white">${escapeHTML(item.button)}</button><p class="mt-3 text-[9px] text-slate-400">${safe?'HTTPS aktif · Pastikan domain milik sekolahmu':'Klaim hadiah khusus akun terpilih!'}</p></div></div></div>`;
+    }
+
+    // Melakukan escape pada teks skenario sebelum memasukkannya ke dalam mockup HTML.
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      })[character]);
+    }
+
+    // Memecah alamat pengirim dan URL menjadi petunjuk teknis yang mudah dipahami.
+    function toggleXray() {
+      const panel = document.getElementById('xray-panel');
+      const button = document.getElementById('xray-button');
+      const item = scenarios[state.index];
+      const opening = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden',!opening);
+      button.setAttribute('aria-expanded',String(opening));
+      if (!opening) return;
+      panel.innerHTML = `<div class="overflow-hidden rounded-xl border border-slate-200 bg-white"><div class="bg-slate-50 px-3 py-2"><p class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">X-Ray alamat</p></div>${item.xray.map(([label,value,note]) => `<div class="xray-row px-3 py-2.5"><div class="flex items-start justify-between gap-2"><p class="text-[9px] font-bold text-slate-500">${escapeHTML(label)}</p><p class="mono max-w-[62%] break-all text-right text-[9px] font-semibold text-slate-800">${escapeHTML(value)}</p></div><p class="mt-1 text-[9px] leading-4 text-slate-500">${escapeHTML(note)}</p></div>`).join('')}</div>`;
+    }
+
+    // Memeriksa jawaban, memperbarui skor, menyorot red flag, dan membuka penjelasan.
+    function submitAnswer(answer) {
+      if (state.modalOpen) return;
+      const item = scenarios[state.index];
+      const correct = (answer === 'phishing') === item.isPhishing;
+      state.answers[state.index] = {answer,correct};
+      if (correct) state.score += 100;
+      state.modalOpen = true;
+      document.querySelectorAll('[data-answer]').forEach(button => button.disabled = true);
+      if (item.flag) {
+        const flag = document.getElementById(item.flag);
+        if (flag) flag.classList.add('flag-highlight');
+      }
+      const icon = document.getElementById('feedback-icon');
+      icon.className = `grid h-12 w-12 place-items-center rounded-2xl text-xl ${correct?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-700'}`;
+      icon.textContent = correct ? '🎯' : '💡';
+      document.getElementById('feedback-kicker').textContent = correct ? 'Jawabanmu tepat · +100 poin' : 'Belum tepat · tetap semangat!';
+      document.getElementById('feedback-kicker').className = `mt-4 text-[10px] font-extrabold uppercase tracking-[.18em] ${correct?'text-emerald-700':'text-amber-700'}`;
+      document.getElementById('feedback-title').textContent = correct ? 'Analisis yang jeli!' : (item.isPhishing ? 'Ternyata ini phishing!' : 'Ternyata pesan ini aman!');
+      document.getElementById('feedback-summary').textContent = item.isPhishing
+        ? 'Ada beberapa tanda bahaya yang penting untuk dikenali. Periksa bukti berikut sebelum mengeklik pesan serupa.'
+        : 'Pesan ini memiliki ciri yang sesuai, tetapi tetap biasakan memeriksa alamat dan konteks sebelum bertindak.';
+      document.getElementById('feedback-reason-heading').textContent = item.isPhishing ? '🚩 Kenapa ini phishing?' : '✅ Kenapa ini aman?';
+      document.getElementById('feedback-reasons').innerHTML = item.reasons.map(reason => `<li>${escapeHTML(reason)}</li>`).join('');
+      document.getElementById('feedback-tip').textContent = item.tip;
+      document.getElementById('next-case').innerHTML = state.index === scenarios.length - 1
+        ? 'Lihat Hasil Akhir <span>→</span>' : 'Lanjut ke Kasus Berikutnya <span>→</span>';
+      document.getElementById('feedback-modal').classList.remove('hidden');
+      document.getElementById('feedback-modal').classList.add('flex');
+      document.getElementById('next-case').focus();
+      saveState();
+    }
+
+    // Menampilkan hasil akhir beserta akurasi dan ringkasan seluruh jawaban.
+    function renderResults() {
+      document.getElementById('result-name').textContent = state.player.name;
+      document.getElementById('final-score').textContent = state.score;
+      const correctCount = state.answers.filter(answer => answer && answer.correct).length;
+      document.getElementById('final-accuracy').textContent = `${Math.round((correctCount / scenarios.length) * 100)}%`;
+      const title = state.score >= 700 ? 'Cyber Guardian (Duta Anti-Phishing)'
+        : state.score >= 400 ? 'Digital Detective (Cukup Teliti)'
+        : 'Cyber Rookie (Perlu Waspada)';
+      document.getElementById('final-title').textContent = title;
+      document.getElementById('recap-list').innerHTML = scenarios.map((item,index) => {
+        const answer = state.answers[index];
+        const correct = Boolean(answer && answer.correct);
+        return `<div class="flex items-center gap-3 rounded-xl border border-slate-100 px-3 py-2.5"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg ${correct?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-700'} text-sm">${correct?'✓':'!'}</span><div class="min-w-0 flex-1"><p class="truncate text-xs font-bold text-slate-700">${escapeHTML(item.title)}</p><p class="mt-0.5 text-[10px] text-slate-400">Kasus ${item.id} · Jawaban: ${answer ? (answer.answer==='phishing'?'Phishing':'Aman') : 'Belum dijawab'}</p></div><span class="text-[10px] font-extrabold ${correct?'text-emerald-700':'text-amber-700'}">${correct?'+100':'0'} pts</span></div>`;
+      }).join('');
+      document.getElementById('progress-bar').style.width = '100%';
+      try {
+        localStorage.setItem('ceklink-last-result-v1',JSON.stringify({player:state.player,score:state.score,accuracy:correctCount/ scenarios.length,title,completedAt:new Date().toISOString()}));
+      } catch (error) {
+        console.warn('Hasil tidak dapat disimpan di perangkat ini.',error);
+      }
+      showScreen('result-screen');
+    }
+
+    // Menggambar sertifikat ke Canvas lalu mengunduh hasilnya sebagai PNG.
+    function downloadCertificate() {
+      const status = document.getElementById('certificate-status');
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1600;
+        canvas.height = 1120;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Canvas tidak tersedia di browser ini.');
+        const gradient = context.createLinearGradient(0,0,1600,1120);
+        gradient.addColorStop(0,'#0f172a');
+        gradient.addColorStop(1,'#12324a');
+        context.fillStyle = gradient;
+        context.fillRect(0,0,canvas.width,canvas.height);
+        context.strokeStyle = '#06b6d4';
+        context.lineWidth = 5;
+        context.strokeRect(42,42,1516,1036);
+        context.strokeStyle = 'rgba(255,255,255,.25)';
+        context.lineWidth = 1;
+        context.strokeRect(62,62,1476,996);
+        context.textAlign = 'center';
+        context.fillStyle = '#67e8f9';
+        context.font = '700 24px "Plus Jakarta Sans", sans-serif';
+        context.fillText('CEKLINK  ·  SIMULATOR ANTI-PHISHING',800,160);
+        context.fillStyle = '#ffffff';
+        context.font = '800 62px "Plus Jakarta Sans", sans-serif';
+        context.fillText('SERTIFIKAT PENCAPAIAN',800,286);
+        context.fillStyle = '#cbd5e1';
+        context.font = '400 27px "Plus Jakarta Sans", sans-serif';
+        context.fillText('Diberikan dengan bangga kepada',800,380);
+        context.fillStyle = '#67e8f9';
+        context.font = '800 60px "Plus Jakarta Sans", sans-serif';
+        context.fillText(state.player.name,800,482);
+        context.fillStyle = '#cbd5e1';
+        context.font = '500 25px "Plus Jakarta Sans", sans-serif';
+        context.fillText(state.player.school,800,535);
+        context.fillStyle = '#ffffff';
+        context.font = '700 28px "Plus Jakarta Sans", sans-serif';
+        context.fillText('telah menyelesaikan 8 simulasi literasi anti-phishing',800,635);
+        context.fillStyle = '#a5f3fc';
+        context.font = '700 31px "Plus Jakarta Sans", sans-serif';
+        const title = state.score >= 700 ? 'Cyber Guardian (Duta Anti-Phishing)' : state.score >= 400 ? 'Digital Detective (Cukup Teliti)' : 'Cyber Rookie (Perlu Waspada)';
+        context.fillText(title,800,715);
+        context.fillStyle = '#ffffff';
+        context.font = '800 33px "JetBrains Mono", monospace';
+        context.fillText(`SKOR  ${state.score} / 800`,800,805);
+        context.fillStyle = '#94a3b8';
+        context.font = '500 21px "Plus Jakarta Sans", sans-serif';
+        context.fillText(`Tanggal: ${new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}`,800,920);
+        context.fillStyle = '#64748b';
+        context.font = '400 17px "Plus Jakarta Sans", sans-serif';
+        context.fillText('Belajar aman, berpikir kritis, dan selalu cek sebelum klik.',800,1000);
+        const link = document.createElement('a');
+        link.download = `Sertifikat-CekLink-${state.player.name.trim().replace(/[^a-z0-9]+/gi,'-') || 'Pelajar'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        status.textContent = 'Sertifikat berhasil diunduh.';
+      } catch (error) {
+        console.error('Sertifikat gagal dibuat.',error);
+        status.textContent = 'Sertifikat gagal dibuat. Coba browser lain.';
+      }
+    }
+
+    // Mengembalikan permainan ke halaman awal dengan data pemain tetap terisi.
+    function restartGame() {
+      state.index = 0;
+      state.score = 0;
+      state.answers = [];
+      state.modalOpen = false;
+      document.getElementById('player-name').value = state.player.name;
+      document.getElementById('player-school').value = state.player.school;
+      saveState();
+      showScreen('landing-screen');
+    }
+
+    // Menghubungkan formulir, pilihan jawaban, X-Ray, navigasi, dan unduhan sertifikat.
+    function initializeApp() {
+      document.getElementById('player-form').addEventListener('submit',event => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        state.player = {
+          name:String(formData.get('name') || '').trim(),
+          school:String(formData.get('school') || '').trim()
+        };
+        if (!state.player.name || !state.player.school) return;
+        state.index = 0;
+        state.score = 0;
+        state.answers = [];
+        state.modalOpen = false;
+        renderCase();
+        showScreen('game-screen');
+      });
+      document.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click',() => submitAnswer(button.dataset.answer)));
+      document.getElementById('xray-button').addEventListener('click',toggleXray);
+      document.getElementById('next-case').addEventListener('click',() => {
+        document.getElementById('feedback-modal').classList.add('hidden');
+        document.getElementById('feedback-modal').classList.remove('flex');
+        state.modalOpen = false;
+        if (state.index === scenarios.length - 1) {
+          renderResults();
+          return;
+        }
+        state.index += 1;
+        renderCase();
+      });
+      document.getElementById('restart-game').addEventListener('click',restartGame);
+      document.getElementById('download-certificate').addEventListener('click',downloadCertificate);
+      document.getElementById('exit-game').addEventListener('click',() => {
+        if (window.confirm('Keluar dari simulasi? Progres saat ini akan direset.')) restartGame();
+      });
+      document.getElementById('brand-home').addEventListener('click',event => {
+        event.preventDefault();
+        showScreen('landing-screen');
+      });
+    }
+
+    initializeApp();
+  </script>
+</body>
+</html>
